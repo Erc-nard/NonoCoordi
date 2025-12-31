@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>노노 옷입히기!</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: pink;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* 시작 화면 없이 게임 화면만 사용 */
+    #gameScreen {
+      display: block;
+      /* 항상 보이도록 설정 */
+      text-align: center;
+    }
+
+    #gameArea {
+      position: relative;
+      width: 1000px;
+      height: 900px;
+      background: url('bg.png') center/cover;
+      border: 2px solid #000;
+      margin: 0 auto;
+    }
+
+    .character {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .item {
+      position: absolute;
+      cursor: grab;
+      z-index: 10;
+      /* 아이템이 캐릭터 위에 오도록 설정 */
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="gameScreen">
+    <div id="gameArea">
+      <img src="basic.png" class="character" id="character" />
+    </div>
+  </div>
+
+  <script>
+    // 아바타 아이템 파일 목록
+    const itemNames = [
+      'h1', 'h2', 'h3', 'h4', 'h5',
+      'c1', 'c2', 'c3', 'c4', 'c5',
+      'g1', 'g2',
+      's1', 's2', 's3'
+    ];
+
+    const gameArea = document.getElementById('gameArea');
+
+    // 아이템 생성 및 배치
+    itemNames.forEach((name, index) => {
+      const item = document.createElement('img');
+      item.src = name + '.png';
+      item.classList.add('item');
+
+      // 아이템을 좌우에 균형있게 배치
+      const col = Math.floor(index / 8);
+      const row = index % 8;
+      item.style.top = (row * 90) + 'px';
+      item.style.left = (col === 0 ? '50px' : '800px');
+
+      gameArea.appendChild(item);
+
+      // 개별 아이템에 드래그 이벤트 등록
+      setupDrag(item);
+    });
+
+    function setupDrag(item) {
+      let offsetX, offsetY;
+
+      function move(x, y) {
+        // gameArea 내에서의 상대 좌표 계산을 위해 rect 활용
+        const rect = gameArea.getBoundingClientRect();
+        item.style.left = (x - rect.left - offsetX) + 'px';
+        item.style.top = (y - rect.top - offsetY) + 'px';
+      }
+
+      function onMouseMove(ev) {
+        move(ev.clientX, ev.clientY);
+      }
+
+      function onTouchMove(ev) {
+        const touch = ev.touches[0];
+        move(touch.clientX, touch.clientY);
+      }
+
+      item.addEventListener('mousedown', (e) => {
+        offsetX = e.clientX - item.getBoundingClientRect().left;
+        offsetY = e.clientY - item.getBoundingClientRect().top;
+        document.addEventListener('mousemove', onMouseMove);
+      });
+
+      item.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        offsetX = touch.clientX - item.getBoundingClientRect().left;
+        offsetY = touch.clientY - item.getBoundingClientRect().top;
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+      }, { passive: false });
+
+      document.addEventListener('mouseup', () => {
+        document.removeEventListener('mousemove', onMouseMove);
+      });
+
+      document.addEventListener('touchend', () => {
+        document.removeEventListener('touchmove', onTouchMove);
+      });
+    }
+  </script>
+
+</body>
+
+</html>
